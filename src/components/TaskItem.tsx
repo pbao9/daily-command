@@ -1,10 +1,11 @@
 import { Button, Card, Checkbox } from '@heroui/react';
-import type { Task } from '../types';
+import type { Project, Task } from '../types';
 import { daysUntil, formatDeadline, isDeadlineUrgent } from '../utils/date';
 import { DeleteIcon, EditIcon } from './icons';
 
 interface TaskItemProps {
   task: Task;
+  project?: Project;
   onToggle: (id: string) => void;
   onToggleSubtask: (taskId: string, subtaskId: string) => void;
   onEdit: (task: Task) => void;
@@ -24,12 +25,21 @@ const PRIORITY_BADGE: Record<Task['priority'], string> = {
   P2: 'bg-default-soft text-default-soft-foreground',
 };
 
+const PROJECT_DOT_COLOR: Record<string, string> = {
+  blue: '#3b82f6',
+  violet: '#8b5cf6',
+  emerald: '#10b981',
+  amber: '#f59e0b',
+  rose: '#f43f5e',
+  cyan: '#06b6d4',
+};
+
 function htmlToPlainText(html: string): string {
   const doc = new DOMParser().parseFromString(html, 'text/html');
   return (doc.body.textContent ?? '').trim();
 }
 
-export function TaskItem({ task, onToggle, onToggleSubtask, onEdit, onDelete }: TaskItemProps) {
+export function TaskItem({ task, project, onToggle, onToggleSubtask, onEdit, onDelete }: TaskItemProps) {
   const descriptionPreview = task.description ? htmlToPlainText(task.description) : '';
   const subtaskDone = task.subtasks.filter((s) => s.completed).length;
 
@@ -61,6 +71,17 @@ export function TaskItem({ task, onToggle, onToggleSubtask, onEdit, onDelete }: 
         <span className="rounded-full bg-default-soft px-2 py-0.5 text-[11px] font-semibold text-default-soft-foreground uppercase">
           {CATEGORY_LABEL[task.category]}
         </span>
+
+        {project && (
+          <span className="flex items-center gap-1 rounded-full bg-default-soft px-2 py-0.5 text-[11px] font-semibold text-default-soft-foreground">
+            <span
+              className="size-2 rounded-full"
+              style={{ backgroundColor: PROJECT_DOT_COLOR[project.color] ?? PROJECT_DOT_COLOR.blue }}
+              aria-hidden="true"
+            />
+            {project.name}
+          </span>
+        )}
 
         {task.deadline && (
           <span

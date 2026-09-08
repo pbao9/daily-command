@@ -10,6 +10,13 @@ export interface Subtask {
   completed: boolean;
 }
 
+export interface Project {
+  id: string;
+  name: string;
+  /** Tailwind color name, e.g. "blue", "violet". */
+  color: string;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -22,6 +29,7 @@ export interface Task {
   subtasks: Subtask[];
   /** "YYYY-MM-DD", optional. */
   deadline?: string;
+  projectId?: string;
 }
 
 export interface DailyData {
@@ -57,4 +65,5 @@ export interface BackupData {
   exportedAt: string;
   settings: Settings;
   dailyData: AllDailyData;
+  projects?: Project[];
 }

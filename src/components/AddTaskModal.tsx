@@ -2,15 +2,19 @@ import { Button, Calendar, Checkbox, DateField, DatePicker, Input, Label, ListBo
 import type { DateValue } from '@internationalized/date';
 import { parseDate } from '@internationalized/date';
 import { useEffect, useState, type KeyboardEvent } from 'react';
-import type { Category, Priority, Subtask, Task } from '../types';
+import type { Category, Priority, Project, Subtask, Task } from '../types';
 import { AddIcon, CloseIcon } from './icons';
 import { RichTextEditor } from './RichTextEditor';
+
+const NO_PROJECT = '__none__';
 
 interface AddTaskModalProps {
   open: boolean;
   task: Task | null;
   todayKey: string;
   tomorrowKey: string;
+  projects: Project[];
+  onCreateProject: (name: string) => Promise<Project>;
   onClose: () => void;
   onSubmit: (input: {
     title: string;
@@ -19,6 +23,7 @@ interface AddTaskModalProps {
     description: string;
     subtasks: Subtask[];
     deadline?: string;
+    projectId?: string;
     targetDate: string;
   }) => void;
 }
@@ -36,7 +41,16 @@ const CATEGORY_OPTIONS: { id: Category; label: string }[] = [
   { id: 'other', label: 'Other' },
 ];
 
-export function AddTaskModal({ open, task, todayKey, tomorrowKey, onClose, onSubmit }: AddTaskModalProps) {
+export function AddTaskModal({
+  open,
+  task,
+  todayKey,
+  tomorrowKey,
+  projects,
+  onCreateProject,
+  onClose,
+  onSubmit,
+}: AddTaskModalProps) {
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState<Priority>('P1');
   const [category, setCategory] = useState<Category>('other');
@@ -45,6 +59,8 @@ export function AddTaskModal({ open, task, todayKey, tomorrowKey, onClose, onSub
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
   const [deadline, setDeadline] = useState<DateValue | null>(null);
   const [targetDate, setTargetDate] = useState(todayKey);
+  const [projectId, setProjectId] = useState<string>(NO_PROJECT);
+  const [newProjectName, setNewProjectName] = useState('');
 
   useEffect(() => {
     if (!open) return;
@@ -56,6 +72,8 @@ export function AddTaskModal({ open, task, todayKey, tomorrowKey, onClose, onSub
     setNewSubtaskTitle('');
     setDeadline(task?.deadline ? parseDate(task.deadline) : null);
     setTargetDate(todayKey);
+    setProjectId(task?.projectId ?? NO_PROJECT);
+    setNewProjectName('');
   }, [open, task, todayKey]);
 
   function handleSubmit() {
@@ -69,8 +87,17 @@ export function AddTaskModal({ open, task, todayKey, tomorrowKey, onClose, onSub
       description,
       subtasks: cleanSubtasks,
       deadline: deadline ? deadline.toString() : undefined,
+      projectId: projectId === NO_PROJECT ? undefined : projectId,
       targetDate,
     });
+  }
+
+  async function createProject() {
+    const name = newProjectName.trim();
+    if (!name) return;
+    const project = await onCreateProject(name);
+    setProjectId(project.id);
+    setNewProjectName('');
   }
 
   function handleTitleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
@@ -105,7 +132,7 @@ export function AddTaskModal({ open, task, todayKey, tomorrowKey, onClose, onSub
       }}
     >
       <Modal.Container>
-        <Modal.Dialog className="sm:max-w-lg">
+        <Modal.Dialog className="sm:max-w-xl">
           <Modal.CloseTrigger>
             <CloseIcon className="size-4" />
           </Modal.CloseTrigger>
@@ -122,6 +149,48 @@ export function AddTaskModal({ open, task, todayKey, tomorrowKey, onClose, onSub
             <div className="flex flex-col gap-1.5">
               <Label>Description</Label>
               <RichTextEditor content={description} onChange={setDescription} />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label>Project</Label>
+              <Select value={projectId} onChange={(value) => setProjectId(value as string)}>
+                <Select.Trigger>
+                  <Select.Value />
+                  <Select.Indicator />
+                </Select.Trigger>
+                <Select.Popover>
+                  <ListBox>
+                    <ListBox.Item id={NO_PROJECT} textValue="No project">
+                      No project
+                      <ListBox.ItemIndicator />
+                    </ListBox.Item>
+                    {projects.map((p) => (
+                      <ListBox.Item key={p.id} id={p.id} textValue={p.name}>
+                        {p.name}
+                        <ListBox.ItemIndicator />
+                      </ListBox.Item>
+                    ))}
+                  </ListBox>
+                </Select.Popover>
+              </Select>
+              <div className="flex gap-2">
+                <TextField className="flex-1" value={newProjectName} onChange={setNewProjectName}>
+                  <Input
+                    placeholder="New project name..."
+                    aria-label="New project name"
+                    maxLength={60}
+                    onKeyDown={(e) => {
+                      if (e.key !== 'Enter') return;
+                      e.preventDefault();
+                      void createProject();
+                    }}
+                  />
+                </TextField>
+                <Button variant="secondary" onPress={() => void createProject()}>
+                  <AddIcon className="size-4" />
+                  Add
+                </Button>
+              </div>
             </div>
 
             <div className="flex gap-3">

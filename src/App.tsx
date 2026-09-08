@@ -15,6 +15,7 @@ import { TaskList } from './components/TaskList';
 import { TodayReminderModal } from './components/TodayReminderModal';
 import { useBackground } from './hooks/useBackground';
 import { useDailyData } from './hooks/useDailyData';
+import { useProjects } from './hooks/useProjects';
 import { DEFAULT_SETTINGS, useSettings } from './hooks/useSettings';
 import { storage } from './services/storage';
 import type { AllDailyData, BackupData, Category, Priority, Subtask, Task } from './types';
@@ -38,6 +39,7 @@ export default function App() {
   const { settings, loading: settingsLoading, updateSettings } = useSettings();
   const background = useBackground(updateSettings);
   const daily = useDailyData();
+  const projects = useProjects();
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -103,6 +105,7 @@ export default function App() {
     description: string;
     subtasks: Subtask[];
     deadline?: string;
+    projectId?: string;
     targetDate: string;
   }) {
     const { targetDate, ...taskInput } = input;
@@ -150,9 +153,10 @@ export default function App() {
   }
 
   async function handleExport() {
-    const [storedSettings, dailyData] = await Promise.all([
+    const [storedSettings, dailyData, storedProjects] = await Promise.all([
       storage.get<typeof settings>('settings'),
       storage.get<AllDailyData>('dailyData'),
+      storage.get<typeof projects.projects>('projects'),
     ]);
     const backup: BackupData = {
       app: 'daily-command',
@@ -160,6 +164,7 @@ export default function App() {
       exportedAt: new Date().toISOString(),
       settings: storedSettings ?? DEFAULT_SETTINGS,
       dailyData: dailyData ?? {},
+      projects: storedProjects ?? [],
     };
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -182,6 +187,7 @@ export default function App() {
       await storage.setAll({
         settings: { ...DEFAULT_SETTINGS, ...data.settings },
         dailyData: data.dailyData,
+        projects: data.projects ?? [],
       });
       toast.success('Backup imported.');
       window.location.reload();
@@ -192,7 +198,7 @@ export default function App() {
     }
   }
 
-  if (settingsLoading || daily.loading) return null;
+  if (settingsLoading || daily.loading || projects.loading) return null;
 
   const showCarryOverBanner = settings.carryOverTasks && daily.pendingCarryOver.length > 0;
 
@@ -216,7 +222,7 @@ export default function App() {
         style={{ opacity: settings.backgroundOverlay / 100 }}
       />
 
-      <main className="relative z-[2] flex h-screen flex-col items-center justify-center overflow-y-auto px-5 py-8">
+      <main className="relative z-[2] flex h-screen flex-col items-center justify-center-safe overflow-y-auto px-5 py-8">
         {showCarryOverBanner && (
           <Card className="fixed top-5 left-1/2 z-40 max-w-[90vw] -translate-x-1/2 flex-row items-center gap-4" role="status">
             <p className="text-sm text-foreground">
@@ -237,7 +243,7 @@ export default function App() {
         <Sidebar onViewHistory={() => setHistoryOpen(true)} onOpenSettings={() => setSettingsOpen(true)} />
 
         <Card
-          className={`w-full flex-col text-center ${settings.taskView === 'grid' ? 'max-w-[900px]' : 'max-w-[620px]'}`}
+          className={`w-full flex-col text-center ${settings.taskView === 'grid' ? 'max-w-[1100px]' : 'max-w-[720px]'}`}
           style={{
             backdropFilter: `blur(${settings.glassBlur}px)`,
             WebkitBackdropFilter: `blur(${settings.glassBlur}px)`,
@@ -262,6 +268,7 @@ export default function App() {
 
           <TaskList
             tasks={daily.data.tasks}
+            projects={projects.projects}
             view={settings.taskView}
             onViewChange={(taskView) => void updateSettings({ taskView })}
             onToggle={(id) => void handleToggleTask(id)}
@@ -285,6 +292,8 @@ export default function App() {
         task={editingTask}
         todayKey={daily.today}
         tomorrowKey={daily.tomorrow}
+        projects={projects.projects}
+        onCreateProject={projects.addProject}
         onClose={() => {
           setTaskModalOpen(false);
           setEditingTask(null);

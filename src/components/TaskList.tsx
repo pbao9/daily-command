@@ -1,10 +1,11 @@
 import { Button } from '@heroui/react';
-import type { Task, TaskView } from '../types';
+import type { Project, Task, TaskView } from '../types';
 import { AddIcon, GridViewIcon, ListViewIcon, SparklesIcon } from './icons';
 import { TaskItem } from './TaskItem';
 
 interface TaskListProps {
   tasks: Task[];
+  projects: Project[];
   view: TaskView;
   onViewChange: (view: TaskView) => void;
   onToggle: (id: string) => void;
@@ -16,7 +17,17 @@ interface TaskListProps {
 
 const PRIORITY_ORDER: Record<Task['priority'], number> = { P0: 0, P1: 1, P2: 2 };
 
-export function TaskList({ tasks, view, onViewChange, onToggle, onToggleSubtask, onEdit, onDelete, onAddTask }: TaskListProps) {
+export function TaskList({
+  tasks,
+  projects,
+  view,
+  onViewChange,
+  onToggle,
+  onToggleSubtask,
+  onEdit,
+  onDelete,
+  onAddTask,
+}: TaskListProps) {
   const total = tasks.length;
   const completed = tasks.filter((t) => t.completed).length;
 
@@ -78,6 +89,7 @@ export function TaskList({ tasks, view, onViewChange, onToggle, onToggleSubtask,
               <TaskItem
                 key={task.id}
                 task={task}
+                project={projects.find((p) => p.id === task.projectId)}
                 onToggle={onToggle}
                 onToggleSubtask={onToggleSubtask}
                 onEdit={onEdit}

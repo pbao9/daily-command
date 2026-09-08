@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Daily Command</title>
+<link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <div id="bgLayer" class="bg-layer" aria-hidden="true"></div>
+  <div id="bgOverlay" class="bg-overlay" aria-hidden="true"></div>
+
+  <main class="stage">
+    <div id="carryBanner" class="carry-banner glass" hidden role="status">
+      <p id="carryBannerText"></p>
+      <div class="carry-actions">
+        <button id="carryAcceptBtn" class="btn btn-primary">Carry over</button>
+        <button id="carryDismissBtn" class="btn btn-ghost">Ignore</button>
+      </div>
+    </div>
+
+    <nav class="quicklinks" aria-label="Quick links">
+      <a class="quicklink" href="https://chat.zalo.me/" target="_blank" rel="noopener noreferrer" aria-label="Zalo" title="Zalo">Za</a>
+      <a class="quicklink" href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube">Yt</a>
+      <a class="quicklink" href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook">Fb</a>
+      <a class="quicklink" href="https://chatgpt.com" target="_blank" rel="noopener noreferrer" aria-label="ChatGPT" title="ChatGPT">Gpt</a>
+      <a class="quicklink" href="https://claude.ai" target="_blank" rel="noopener noreferrer" aria-label="Claude" title="Claude">Cl</a>
+      <a class="quicklink" href="https://google.com" target="_blank" rel="noopener noreferrer" aria-label="Google" title="Google">G</a>
+    </nav>
+
+    <div class="topbar">
+      <button id="historyBtn" class="icon-btn" aria-label="View history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3.29-6.95"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg></button>
+      <button id="settingsBtn" class="icon-btn" aria-label="Open settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+    </div>
+
+    <div class="dashboard glass">
+      <p class="date" id="dateLine"></p>
+      <p class="greeting" id="greetingLine" hidden></p>
+
+      <section class="focus-section" id="focusSection">
+        <div class="focus-header">
+          <span class="eyebrow">Today's Focus</span>
+          <div class="focus-actions" id="focusActions" hidden>
+            <button id="editFocusBtn" class="link-btn" aria-label="Edit focus">Edit</button>
+            <button id="clearFocusBtn" class="link-btn" aria-label="Clear focus">Clear</button>
+          </div>
+        </div>
+        <p class="focus-text" id="focusText"></p>
+        <button id="setFocusBtn" class="btn btn-primary" hidden>Set today's focus</button>
+      </section>
+
+      <section class="progress-section" id="progressSection" hidden>
+        <div class="progress-label">
+          <span class="eyebrow">Today</span>
+          <span id="progressCount"></span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      </section>
+
+      <section class="tasks-section">
+        <div class="kanban-board" id="kanbanBoard">
+          <div class="kanban-column" data-status="todo">
+            <div class="kanban-col-header">
+              <span>Cần làm <span class="lang-en">(To do)</span></span>
+              <span class="kanban-count" id="countTodo">0</span>
+            </div>
+            <ul class="kanban-list" id="listTodo" data-status="todo"></ul>
+          </div>
+          <div class="kanban-column" data-status="doing">
+            <div class="kanban-col-header">
+              <span>Đang làm <span class="lang-en">(Doing)</span></span>
+              <span class="kanban-count" id="countDoing">0</span>
+            </div>
+            <ul class="kanban-list" id="listDoing" data-status="doing"></ul>
+          </div>
+          <div class="kanban-column" data-status="done">
+            <div class="kanban-col-header">
+              <span>Hoàn thành <span class="lang-en">(Done)</span></span>
+              <span class="kanban-count" id="countDone">0</span>
+            </div>
+            <ul class="kanban-list" id="listDone" data-status="done"></ul>
+          </div>
+        </div>
+
+        <div class="empty-state" id="emptyState" hidden>
+          <p class="empty-title">Nothing planned yet.</p>
+          <p class="empty-sub">What matters today?</p>
+        </div>
+
+        <div class="done-state" id="doneState" hidden>
+          <p><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-inline" aria-hidden="true"><path d="M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.14-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.13a.5.5 0 0 1 .96 0L14.06 8.5a2 2 0 0 0 1.44 1.44l6.13 1.58a.5.5 0 0 1 0 .96l-6.13 1.58a2 2 0 0 0-1.44 1.44l-1.58 6.13a.5.5 0 0 1-.96 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg> Everything done.</p>
+          <p class="empty-sub">Nice work.</p>
+        </div>
+
+        <button id="addTaskBtn" class="btn btn-add">+ Add Task</button>
+      </section>
+    </div>
+  </main>
+
+  <dialog id="taskDialog" class="glass-dialog">
+    <form method="dialog" id="taskForm">
+      <h2 id="taskDialogTitle">New Task</h2>
+      <label for="taskTitleInput">Title</label>
+      <input id="taskTitleInput" type="text" maxlength="200" required autocomplete="off" />
+
+      <label for="taskDescriptionInput">Description</label>
+      <textarea id="taskDescriptionInput" rows="3" maxlength="2000" placeholder="Optional details..."></textarea>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="taskPriorityInput">Priority</label>
+          <select id="taskPriorityInput">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="taskCategoryInput">Category</label>
+          <select id="taskCategoryInput">
+            <option value="work">Work</option>
+            <option value="learning">Learning</option>
+            <option value="personal">Personal</option>
+            <option value="other" selected>Other</option>
+          </select>
+        </div>
+      </div>
+
+      <label id="subtaskLabel">Subtasks</label>
+      <ul class="subtask-edit-list" id="subtaskEditList" aria-labelledby="subtaskLabel"></ul>
+      <div class="field-row">
+        <input id="newSubtaskInput" type="text" maxlength="200" autocomplete="off" placeholder="Add a subtask..." aria-label="New subtask title" />
+        <button type="button" class="btn btn-ghost" id="addSubtaskBtn">Add</button>
+      </div>
+
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-ghost" id="taskCancelBtn">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="taskSaveBtn">Add Task</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="focusDialog" class="glass-dialog">
+    <form method="dialog" id="focusForm">
+      <h2>Today's Focus</h2>
+      <label for="focusInput">What's the one thing?</label>
+      <input id="focusInput" type="text" maxlength="200" required autocomplete="off" />
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-ghost" id="focusCancelBtn">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="historyDialog" class="glass-dialog history-dialog">
+    <div class="dialog-header">
+      <h2>History</h2>
+      <button class="icon-btn" id="historyCloseBtn" aria-label="Close history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+    </div>
+    <select id="historyDateSelect" aria-label="Select a date"></select>
+    <div id="historyContent" class="history-content"></div>
+  </dialog>
+
+  <dialog id="settingsDialog" class="glass-dialog settings-dialog">
+    <div class="dialog-header">
+      <h2>Settings</h2>
+      <button class="icon-btn" id="settingsCloseBtn" aria-label="Close settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+    </div>
+
+    <div class="settings-body">
+      <section class="settings-group">
+        <h3>Profile</h3>
+        <label for="nameInput">Name</label>
+        <input id="nameInput" type="text" maxlength="40" autocomplete="off" />
+      </section>
+
+      <section class="settings-group">
+        <h3>Background</h3>
+        <div class="field-row">
+          <button class="btn btn-ghost" id="uploadBgBtn">Upload Background</button>
+          <button class="btn btn-ghost" id="removeBgBtn">Remove Background</button>
+        </div>
+        <input type="file" id="bgFileInput" accept="image/*" hidden />
+        <p class="hint" id="bgHint"></p>
+
+        <label for="bgFitInput">Fit</label>
+        <select id="bgFitInput">
+          <option value="cover">Cover</option>
+          <option value="center">Center</option>
+          <option value="fixed">Fixed</option>
+        </select>
+
+        <label for="overlayInput">Overlay Darkness <span id="overlayValue"></span></label>
+        <input id="overlayInput" type="range" min="0" max="80" step="1" />
+
+        <label for="bgBlurInput">Background Blur <span id="bgBlurValue"></span></label>
+        <input id="bgBlurInput" type="range" min="0" max="20" step="1" />
+
+        <label for="bgOpacityInput">Background Opacity <span id="bgOpacityValue"></span></label>
+        <input id="bgOpacityInput" type="range" min="20" max="100" step="1" />
+      </section>
+
+      <section class="settings-group">
+        <h3>Appearance</h3>
+        <label for="themeInput">Theme</label>
+        <select id="themeInput">
+          <option value="auto">Auto</option>
+          <option value="dark">Dark Glass</option>
+          <option value="light">Light Glass</option>
+        </select>
+
+        <label for="glassBlurInput">Glass Blur <span id="glassBlurValue"></span></label>
+        <input id="glassBlurInput" type="range" min="0" max="40" step="1" />
+
+        <label for="glassOpacityInput">Glass Opacity <span id="glassOpacityValue"></span></label>
+        <input id="glassOpacityInput" type="range" min="4" max="40" step="1" />
+      </section>
+
+      <section class="settings-group">
+        <h3>Behavior</h3>
+        <label class="checkbox-row"><input type="checkbox" id="carryOverInput" /> Carry unfinished tasks to next day</label>
+        <label class="checkbox-row"><input type="checkbox" id="showGreetingInput" /> Show greeting</label>
+        <label class="checkbox-row"><input type="checkbox" id="showProgressInput" /> Show progress</label>
+      </section>
+
+      <section class="settings-group">
+        <h3>Backup</h3>
+        <div class="field-row">
+          <button class="btn btn-ghost" id="exportBtn">Export Data</button>
+          <button class="btn btn-ghost" id="importBtn">Import Data</button>
+        </div>
+        <input type="file" id="importFileInput" accept="application/json" hidden />
+        <p class="hint" id="importHint"></p>
+      </section>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="alert" aria-live="assertive" hidden></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/tasks.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

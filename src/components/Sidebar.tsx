@@ -14,7 +14,7 @@ const QUICK_LINKS = [
 ];
 
 const iconLinkClass =
-  'flex size-9 items-center justify-center rounded-field bg-default text-foreground no-underline transition-colors hover:bg-default-hover';
+  'flex size-9 items-center justify-center rounded-field bg-default text-white no-underline transition-colors hover:bg-default-hover';
 
 // Persistent top-right icon rail, always reachable regardless of scroll
 // position. QuickActions covers the same in-app actions inline for

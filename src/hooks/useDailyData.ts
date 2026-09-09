@@ -42,6 +42,20 @@ interface NewTaskInput {
   deadline?: string;
 }
 
+export interface DeadlineTask extends Task {
+  dateKey: string;
+}
+
+function collectDeadlineTasks(all: AllDailyData): DeadlineTask[] {
+  const result: DeadlineTask[] = [];
+  for (const [dateKey, day] of Object.entries(all)) {
+    for (const t of day.tasks) {
+      if (!t.completed && t.deadline) result.push({ ...t, dateKey });
+    }
+  }
+  return result.sort((a, b) => (a.deadline! < b.deadline! ? -1 : a.deadline! > b.deadline! ? 1 : 0));
+}
+
 interface UseDailyDataResult {
   today: string;
   tomorrow: string;
@@ -58,6 +72,16 @@ interface UseDailyDataResult {
   pendingCarryOver: Task[];
   applyCarryOver: () => Promise<void>;
   dismissCarryOver: () => Promise<void>;
+  /** The day currently browsed via the datepicker (defaults to `today`). */
+  viewDate: string;
+  setViewDate: (dateKey: string) => void;
+  viewData: DailyData;
+  updateViewTask: (id: string, changes: Partial<Omit<Task, 'id'>>) => Promise<void>;
+  toggleViewTask: (id: string) => Promise<void>;
+  deleteViewTask: (id: string) => Promise<void>;
+  toggleSubtaskViewTask: (taskId: string, subtaskId: string) => Promise<void>;
+  /** Incomplete tasks with a deadline, across every day, soonest first. */
+  deadlineTasks: DeadlineTask[];
 }
 
 export function useDailyData(): UseDailyDataResult {
@@ -66,6 +90,27 @@ export function useDailyData(): UseDailyDataResult {
   const [data, setData] = useState<DailyData>(emptyDay(today));
   const [loading, setLoading] = useState(true);
   const [pendingCarryOver, setPendingCarryOver] = useState<Task[]>([]);
+  const [deadlineTasks, setDeadlineTasks] = useState<DeadlineTask[]>([]);
+
+  const [viewDate, setViewDate] = useState(today);
+  const [otherDayData, setOtherDayData] = useState<DailyData | null>(null);
+  const isViewingToday = viewDate === today;
+  const viewData = isViewingToday ? data : (otherDayData ?? emptyDay(viewDate));
+
+  useEffect(() => {
+    if (isViewingToday) {
+      setOtherDayData(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const all = await readAllDailyData();
+      if (!cancelled) setOtherDayData(all[viewDate] ?? emptyDay(viewDate));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [viewDate, isViewingToday]);
 
   useEffect(() => {
     let cancelled = false;
@@ -75,6 +120,7 @@ export function useDailyData(): UseDailyDataResult {
       if (cancelled) return;
 
       setData(all[today] ?? emptyDay(today));
+      setDeadlineTasks(collectDeadlineTasks(all));
       setLoading(false);
 
       const alreadyHandled = meta.carryOverHandledDate === today;
@@ -97,6 +143,21 @@ export function useDailyData(): UseDailyDataResult {
       all[today] = next;
       await storage.set(DAILY_DATA_KEY, all);
       setData(next);
+      setDeadlineTasks(collectDeadlineTasks(all));
+    },
+    [today],
+  );
+
+  // Same as `persist`, but for an arbitrary date (used to edit tasks on a
+  // day other than today while browsing via the datepicker).
+  const persistDate = useCallback(
+    async (dateKey: string, next: DailyData) => {
+      const all = await readAllDailyData();
+      all[dateKey] = next;
+      await storage.set(DAILY_DATA_KEY, all);
+      if (dateKey === today) setData(next);
+      else setOtherDayData(next);
+      setDeadlineTasks(collectDeadlineTasks(all));
     },
     [today],
   );
@@ -134,8 +195,10 @@ export function useDailyData(): UseDailyDataResult {
       all[dateKey] = nextDay;
       await storage.set(DAILY_DATA_KEY, all);
       if (dateKey === today) setData(nextDay);
+      else if (dateKey === viewDate) setOtherDayData(nextDay);
+      setDeadlineTasks(collectDeadlineTasks(all));
     },
-    [today],
+    [today, viewDate],
   );
 
   const addTask = useCallback(
@@ -181,6 +244,42 @@ export function useDailyData(): UseDailyDataResult {
     [data, persist],
   );
 
+  const updateViewTask = useCallback(
+    async (id: string, changes: Partial<Omit<Task, 'id'>>) => {
+      const tasks = viewData.tasks.map((t) => (t.id === id ? { ...t, ...changes } : t));
+      await persistDate(viewDate, { ...viewData, tasks });
+    },
+    [viewData, viewDate, persistDate],
+  );
+
+  const toggleViewTask = useCallback(
+    async (id: string) => {
+      const tasks = viewData.tasks.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t));
+      await persistDate(viewDate, { ...viewData, tasks });
+    },
+    [viewData, viewDate, persistDate],
+  );
+
+  const deleteViewTask = useCallback(
+    async (id: string) => {
+      const tasks = viewData.tasks.filter((t) => t.id !== id);
+      await persistDate(viewDate, { ...viewData, tasks });
+    },
+    [viewData, viewDate, persistDate],
+  );
+
+  const toggleSubtaskViewTask = useCallback(
+    async (taskId: string, subtaskId: string) => {
+      const tasks = viewData.tasks.map((t) =>
+        t.id === taskId
+          ? { ...t, subtasks: t.subtasks.map((s) => (s.id === subtaskId ? { ...s, completed: !s.completed } : s)) }
+          : t,
+      );
+      await persistDate(viewDate, { ...viewData, tasks });
+    },
+    [viewData, viewDate, persistDate],
+  );
+
   const markCarryOverHandled = useCallback(async () => {
     await storage.set<Meta>(META_KEY, { carryOverHandledDate: today });
     setPendingCarryOver([]);
@@ -221,5 +320,13 @@ export function useDailyData(): UseDailyDataResult {
     pendingCarryOver,
     applyCarryOver,
     dismissCarryOver,
+    viewDate,
+    setViewDate,
+    viewData,
+    updateViewTask,
+    toggleViewTask,
+    deleteViewTask,
+    toggleSubtaskViewTask,
+    deadlineTasks,
   };
 }

@@ -17,6 +17,14 @@ export interface Project {
   color: string;
 }
 
+export interface Note {
+  id: string;
+  title: string;
+  body: string;
+  pinned: boolean;
+  createdAt: string;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -66,4 +74,5 @@ export interface BackupData {
   settings: Settings;
   dailyData: AllDailyData;
   projects?: Project[];
+  notes?: Note[];
 }

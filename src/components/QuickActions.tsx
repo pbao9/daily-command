@@ -20,9 +20,8 @@ function activateOnEnter(handler: () => void) {
 
 export function QuickActions({ onAddTask, onSetFocus, onViewHistory, onOpenSettings }: QuickActionsProps) {
   return (
-    <section className="mt-6 flex flex-col items-center gap-2">
-      <span className="text-xs font-semibold tracking-wide text-muted uppercase">Quick Actions</span>
-      <Dock iconSize={36} iconMagnification={52} iconDistance={100} className="border-border bg-surface/60">
+    <section className="fixed bottom-5 left-1/2 z-30 -translate-x-1/2">
+      <Dock iconSize={36} iconMagnification={52} iconDistance={100} className="border-border bg-surface/80 shadow-lg backdrop-blur">
         <DockIcon
           role="button"
           tabIndex={0}
@@ -31,7 +30,7 @@ export function QuickActions({ onAddTask, onSetFocus, onViewHistory, onOpenSetti
           onClick={onAddTask}
           onKeyDown={activateOnEnter(onAddTask)}
         >
-          <AddIcon className="size-4 text-foreground" />
+          <AddIcon className="size-4 text-white" />
         </DockIcon>
         <DockIcon
           role="button"
@@ -41,7 +40,7 @@ export function QuickActions({ onAddTask, onSetFocus, onViewHistory, onOpenSetti
           onClick={onSetFocus}
           onKeyDown={activateOnEnter(onSetFocus)}
         >
-          <TargetIcon className="size-4 text-foreground" />
+          <TargetIcon className="size-4 text-white" />
         </DockIcon>
         <DockIcon
           role="button"
@@ -51,7 +50,7 @@ export function QuickActions({ onAddTask, onSetFocus, onViewHistory, onOpenSetti
           onClick={onViewHistory}
           onKeyDown={activateOnEnter(onViewHistory)}
         >
-          <HistoryIcon className="size-4 text-foreground" />
+          <HistoryIcon className="size-4 text-white" />
         </DockIcon>
         <DockIcon
           role="button"
@@ -61,7 +60,7 @@ export function QuickActions({ onAddTask, onSetFocus, onViewHistory, onOpenSetti
           onClick={onOpenSettings}
           onKeyDown={activateOnEnter(onOpenSettings)}
         >
-          <SettingsIcon className="size-4 text-foreground" />
+          <SettingsIcon className="size-4 text-white" />
         </DockIcon>
       </Dock>
     </section>

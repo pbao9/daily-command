@@ -22,7 +22,7 @@ export function BackgroundCard({ settings, updateSettings, uploading, error, onU
 
   return (
     <section className="flex flex-col gap-3">
-      <h3 className="text-xs font-semibold tracking-wide text-muted uppercase">Background &amp; Appearance</h3>
+      <h3 className="text-xs font-semibold tracking-wide text-white uppercase">Background &amp; Appearance</h3>
 
       <div className="flex gap-2">
         <Button variant="secondary" isDisabled={uploading} onPress={() => fileInputRef.current?.click()}>
@@ -43,7 +43,7 @@ export function BackgroundCard({ settings, updateSettings, uploading, error, onU
           e.target.value = '';
         }}
       />
-      <p className="text-xs text-muted">
+      <p className="text-xs text-white">
         {error ?? (settings.backgroundImage ? 'Custom background active.' : 'Using the default background.')}
       </p>
 

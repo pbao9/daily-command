@@ -1,7 +1,9 @@
-import { Button, Card, Checkbox } from '@heroui/react';
+import { Button, Card, Checkbox, Dropdown } from '@heroui/react';
+import type { Key } from 'react-aria-components';
 import type { Project, Task } from '../types';
 import { daysUntil, formatDeadline, isDeadlineUrgent } from '../utils/date';
-import { DeleteIcon, EditIcon } from './icons';
+import { htmlToPlainText } from '../utils/html';
+import { DeleteIcon, EditIcon, SettingsIcon } from './icons';
 
 interface TaskItemProps {
   task: Task;
@@ -10,6 +12,7 @@ interface TaskItemProps {
   onToggleSubtask: (taskId: string, subtaskId: string) => void;
   onEdit: (task: Task) => void;
   onDelete: (id: string) => void;
+  onOpenDetail: (task: Task) => void;
 }
 
 const CATEGORY_LABEL: Record<Task['category'], string> = {
@@ -34,12 +37,7 @@ const PROJECT_DOT_COLOR: Record<string, string> = {
   cyan: '#06b6d4',
 };
 
-function htmlToPlainText(html: string): string {
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  return (doc.body.textContent ?? '').trim();
-}
-
-export function TaskItem({ task, project, onToggle, onToggleSubtask, onEdit, onDelete }: TaskItemProps) {
+export function TaskItem({ task, project, onToggle, onToggleSubtask, onEdit, onDelete, onOpenDetail }: TaskItemProps) {
   const descriptionPreview = task.description ? htmlToPlainText(task.description) : '';
   const subtaskDone = task.subtasks.filter((s) => s.completed).length;
 
@@ -48,20 +46,23 @@ export function TaskItem({ task, project, onToggle, onToggleSubtask, onEdit, onD
 
   return (
     <Card
-      className={`w-full flex-col gap-2 ${
+      className={`w-full cursor-pointer flex-col gap-2 ${
         urgent ? 'border-danger bg-danger-soft/40' : task.priority === 'P0' ? 'border-danger/40' : ''
       }`}
+      onClick={() => onOpenDetail(task)}
     >
       <div className="flex flex-wrap items-center gap-2">
-        <Checkbox isSelected={task.completed} onChange={() => onToggle(task.id)} aria-label={`Mark "${task.title}" as completed`}>
-          <Checkbox.Content>
-            <Checkbox.Control>
-              <Checkbox.Indicator />
-            </Checkbox.Control>
-          </Checkbox.Content>
-        </Checkbox>
+        <span onClick={(e) => e.stopPropagation()}>
+          <Checkbox isSelected={task.completed} onChange={() => onToggle(task.id)} aria-label={`Mark "${task.title}" as completed`}>
+            <Checkbox.Content>
+              <Checkbox.Control>
+                <Checkbox.Indicator />
+              </Checkbox.Control>
+            </Checkbox.Content>
+          </Checkbox>
+        </span>
 
-        <span className={`min-w-0 flex-1 truncate text-sm ${task.completed ? 'text-muted line-through' : 'text-foreground'}`}>
+        <span className={`min-w-0 flex-1 truncate text-sm ${task.completed ? 'text-white line-through' : 'text-white'}`}>
           {task.title}
         </span>
 
@@ -95,21 +96,39 @@ export function TaskItem({ task, project, onToggle, onToggleSubtask, onEdit, onD
           </span>
         )}
 
-        <div className="flex gap-1">
-          <Button isIconOnly size="sm" variant="ghost" aria-label={`Edit "${task.title}"`} onPress={() => onEdit(task)}>
-            <EditIcon className="size-4" />
-          </Button>
-          <Button isIconOnly size="sm" variant="ghost" aria-label={`Delete "${task.title}"`} onPress={() => onDelete(task.id)}>
-            <DeleteIcon className="size-4" />
-          </Button>
-        </div>
+        <span onClick={(e) => e.stopPropagation()}>
+          <Dropdown>
+            <Dropdown.Trigger>
+              <Button isIconOnly size="sm" variant="ghost" aria-label={`Actions for "${task.title}"`}>
+                <SettingsIcon className="size-3.5" />
+              </Button>
+            </Dropdown.Trigger>
+            <Dropdown.Popover placement="bottom end">
+              <Dropdown.Menu
+                onAction={(key: Key) => {
+                  if (key === 'edit') onEdit(task);
+                  if (key === 'delete') onDelete(task.id);
+                }}
+              >
+                <Dropdown.Item id="edit" textValue="Edit">
+                  <EditIcon className="size-3.5" />
+                  Edit
+                </Dropdown.Item>
+                <Dropdown.Item id="delete" textValue="Delete">
+                  <DeleteIcon className="size-3.5" />
+                  Delete
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown.Popover>
+          </Dropdown>
+        </span>
       </div>
 
-      {descriptionPreview && <p className="truncate pl-8 text-xs text-muted">{descriptionPreview}</p>}
+      {descriptionPreview && <p className="truncate pl-8 text-xs text-white">{descriptionPreview}</p>}
 
       {task.subtasks.length > 0 && (
-        <div className="flex flex-col gap-1 pl-8">
-          <span className="text-[11px] font-semibold tracking-wide text-muted uppercase">
+        <div className="flex flex-col gap-1 pl-8" onClick={(e) => e.stopPropagation()}>
+          <span className="text-[11px] font-semibold tracking-wide text-white uppercase">
             Checklist · {subtaskDone}/{task.subtasks.length}
           </span>
           <ul className="flex flex-col gap-1">
@@ -122,7 +141,7 @@ export function TaskItem({ task, project, onToggle, onToggleSubtask, onEdit, onD
                     </Checkbox.Control>
                   </Checkbox.Content>
                 </Checkbox>
-                <span className={`text-xs ${s.completed ? 'text-muted line-through' : 'text-foreground'}`}>{s.title}</span>
+                <span className={`text-xs ${s.completed ? 'text-white line-through' : 'text-white'}`}>{s.title}</span>
               </li>
             ))}
           </ul>

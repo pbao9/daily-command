@@ -63,7 +63,7 @@ export function HistoryModal({ open, onClose }: HistoryModalProps) {
 
           <Modal.Body className="flex flex-col gap-4">
             {dates.length === 0 ? (
-              <p className="text-sm text-muted">No history yet.</p>
+              <p className="text-sm text-white">No history yet.</p>
             ) : (
               <>
                 <Select value={selectedDate} onChange={(value) => setSelectedDate(value as string)}>
@@ -85,16 +85,16 @@ export function HistoryModal({ open, onClose }: HistoryModalProps) {
                 </Select>
 
                 <div className="flex flex-col gap-3">
-                  {day?.focus && <p className="text-base font-semibold text-foreground">{day.focus}</p>}
+                  {day?.focus && <p className="text-base font-semibold text-white">{day.focus}</p>}
 
                   {!day || day.tasks.length === 0 ? (
-                    <p className="text-sm text-muted">No tasks recorded for this day.</p>
+                    <p className="text-sm text-white">No tasks recorded for this day.</p>
                   ) : (
                     <>
                       {completed.length > 0 && (
                         <div className="flex flex-col gap-1">
-                          <p className="text-xs font-semibold tracking-wide text-muted uppercase">Completed</p>
-                          <ul className="flex flex-col gap-1 text-sm text-foreground">
+                          <p className="text-xs font-semibold tracking-wide text-white uppercase">Completed</p>
+                          <ul className="flex flex-col gap-1 text-sm text-white">
                             {completed.map((t) => (
                               <li key={t.id}>✓ {t.title}</li>
                             ))}
@@ -103,8 +103,8 @@ export function HistoryModal({ open, onClose }: HistoryModalProps) {
                       )}
                       {incomplete.length > 0 && (
                         <div className="flex flex-col gap-1">
-                          <p className="text-xs font-semibold tracking-wide text-muted uppercase">Incomplete</p>
-                          <ul className="flex flex-col gap-1 text-sm text-foreground">
+                          <p className="text-xs font-semibold tracking-wide text-white uppercase">Incomplete</p>
+                          <ul className="flex flex-col gap-1 text-sm text-white">
                             {incomplete.map((t) => (
                               <li key={t.id}>○ {t.title}</li>
                             ))}

@@ -69,7 +69,7 @@ export function SettingsModal({
 
           <Modal.Body className="flex flex-col gap-6">
             <section className="flex flex-col gap-2">
-              <h3 className="text-xs font-semibold tracking-wide text-muted uppercase">Profile</h3>
+              <h3 className="text-xs font-semibold tracking-wide text-white uppercase">Profile</h3>
               <TextField name="name" value={settings.name} onChange={(v) => updateSettings({ name: v })}>
                 <Label>Name</Label>
                 <Input maxLength={40} />
@@ -86,7 +86,7 @@ export function SettingsModal({
             />
 
             <section className="flex flex-col gap-3">
-              <h3 className="text-xs font-semibold tracking-wide text-muted uppercase">Behavior</h3>
+              <h3 className="text-xs font-semibold tracking-wide text-white uppercase">Behavior</h3>
               <ToggleRow
                 label="Carry unfinished tasks to next day"
                 checked={settings.carryOverTasks}
@@ -105,7 +105,7 @@ export function SettingsModal({
             </section>
 
             <section className="flex flex-col gap-2">
-              <h3 className="text-xs font-semibold tracking-wide text-muted uppercase">Backup</h3>
+              <h3 className="text-xs font-semibold tracking-wide text-white uppercase">Backup</h3>
               <div className="flex gap-2">
                 <Button variant="secondary" onPress={onExport}>
                   Export Data
@@ -125,7 +125,7 @@ export function SettingsModal({
                   e.target.value = '';
                 }}
               />
-              {importHint && <p className="text-xs text-muted">{importHint}</p>}
+              {importHint && <p className="text-xs text-white">{importHint}</p>}
             </section>
           </Modal.Body>
         </Modal.Dialog>

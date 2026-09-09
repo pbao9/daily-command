@@ -1,8 +1,10 @@
 import { Button, Card, Input, TextField } from "@heroui/react";
 import { useEffect, useState, type KeyboardEvent } from "react";
+import { CloseIcon, EditIcon, TargetIcon } from "./icons";
 
 interface FocusCardProps {
     focus: string;
+    pendingCount: number;
     onSave: (value: string) => void;
     onClear: () => void;
     /** Bump this number (e.g. from a "Set Focus" quick action) to open the editor. */
@@ -11,6 +13,7 @@ interface FocusCardProps {
 
 export function FocusCard({
     focus,
+    pendingCount,
     onSave,
     onClear,
     editSignal,
@@ -41,13 +44,39 @@ export function FocusCard({
     }
 
     return (
-        <Card className="w-full text-center">
-            <p className="text-xs font-semibold tracking-wide text-muted uppercase">
-                Today's Focus
-            </p>
+        <Card className="w-full items-start gap-3 text-left">
+            <div className="flex w-full items-center justify-between">
+                <span className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-accent-soft-foreground uppercase">
+                    <TargetIcon className="size-3.5" />
+                    Today's Focus
+                </span>
+
+                {!editing && focus && (
+                    <div className="flex gap-1">
+                        <Button
+                            isIconOnly
+                            size="sm"
+                            variant="ghost"
+                            aria-label="Edit focus"
+                            onPress={startEditing}
+                        >
+                            <EditIcon className="size-3.5" />
+                        </Button>
+                        <Button
+                            isIconOnly
+                            size="sm"
+                            variant="ghost"
+                            aria-label="Clear focus"
+                            onPress={onClear}
+                        >
+                            <CloseIcon className="size-3.5" />
+                        </Button>
+                    </div>
+                )}
+            </div>
 
             {editing ? (
-                <div className="mt-2.5 flex flex-col gap-3">
+                <div className="flex w-full flex-col gap-3">
                     <TextField
                         value={draft}
                         onChange={setDraft}
@@ -56,7 +85,7 @@ export function FocusCard({
                         <Input
                             autoFocus
                             maxLength={200}
-                            className="text-center"
+                            placeholder="What's the one thing that matters today?"
                             onKeyDown={handleKeyDown}
                         />
                     </TextField>
@@ -71,27 +100,20 @@ export function FocusCard({
                     </div>
                 </div>
             ) : focus ? (
-                <>
-                    <p className="mt-2.5 text-2xl leading-snug font-semibold text-foreground">
-                        {focus}
-                    </p>
-                    <div className="mt-2 flex justify-center gap-4">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onPress={startEditing}
-                        >
-                            Edit
-                        </Button>
-                        <Button variant="ghost" size="sm" onPress={onClear}>
-                            Clear
-                        </Button>
-                    </div>
-                </>
+                <p className="text-2xl leading-snug font-bold text-white">
+                    {focus}
+                </p>
             ) : (
-                <Button className="mt-3 mx-auto" onPress={startEditing}>
+                <Button variant="secondary" onPress={startEditing}>
                     Set today's focus
                 </Button>
+            )}
+
+            {!editing && pendingCount > 0 && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-warning-soft px-2.5 py-1 text-xs font-semibold text-warning-soft-foreground">
+                    {pendingCount} task{pendingCount === 1 ? "" : "s"} left
+                    today
+                </span>
             )}
         </Card>
     );

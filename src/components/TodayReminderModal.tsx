@@ -31,7 +31,7 @@ export function TodayReminderModal({ open, tasks, onClose, onToggle }: TodayRemi
           </Modal.CloseTrigger>
           <Modal.Header>
             <Modal.Heading>You still have tasks left today</Modal.Heading>
-            <p className="mt-1 text-sm text-muted">
+            <p className="mt-1 text-sm text-white">
               {tasks.length} unfinished task{tasks.length === 1 ? '' : 's'} for today. Please try to complete{' '}
               {tasks.length === 1 ? 'it' : 'them'}.
             </p>
@@ -48,7 +48,7 @@ export function TodayReminderModal({ open, tasks, onClose, onToggle }: TodayRemi
                       </Checkbox.Control>
                     </Checkbox.Content>
                   </Checkbox>
-                  <span className="min-w-0 flex-1 truncate text-sm text-foreground">{task.title}</span>
+                  <span className="min-w-0 flex-1 truncate text-sm text-white">{task.title}</span>
                   <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${PRIORITY_BADGE[task.priority]}`}>
                     {task.priority}
                   </span>

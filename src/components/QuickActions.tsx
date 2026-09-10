@@ -1,5 +1,5 @@
 import type { KeyboardEvent } from 'react';
-import { AddIcon, HistoryIcon, SettingsIcon, TargetIcon } from './icons';
+import { AddIcon, HistoryIcon, SettingsIcon, SparklesIcon, TargetIcon } from './icons';
 import { Dock, DockIcon } from './magicui/dock';
 
 interface QuickActionsProps {
@@ -7,6 +7,7 @@ interface QuickActionsProps {
   onSetFocus: () => void;
   onViewHistory: () => void;
   onOpenSettings: () => void;
+  onOpenFocusMode: () => void;
 }
 
 function activateOnEnter(handler: () => void) {
@@ -18,10 +19,20 @@ function activateOnEnter(handler: () => void) {
   };
 }
 
-export function QuickActions({ onAddTask, onSetFocus, onViewHistory, onOpenSettings }: QuickActionsProps) {
+export function QuickActions({ onAddTask, onSetFocus, onViewHistory, onOpenSettings, onOpenFocusMode }: QuickActionsProps) {
   return (
     <section className="fixed bottom-5 left-1/2 z-30 -translate-x-1/2">
       <Dock iconSize={36} iconMagnification={52} iconDistance={100} className="border-border bg-surface/80 shadow-lg backdrop-blur">
+        <DockIcon
+          role="button"
+          tabIndex={0}
+          aria-label="Focus Mode"
+          title="Focus Mode"
+          onClick={onOpenFocusMode}
+          onKeyDown={activateOnEnter(onOpenFocusMode)}
+        >
+          <TargetIcon className="size-4 text-white" />
+        </DockIcon>
         <DockIcon
           role="button"
           tabIndex={0}
@@ -40,7 +51,7 @@ export function QuickActions({ onAddTask, onSetFocus, onViewHistory, onOpenSetti
           onClick={onSetFocus}
           onKeyDown={activateOnEnter(onSetFocus)}
         >
-          <TargetIcon className="size-4 text-white" />
+          <SparklesIcon className="size-4 text-white" />
         </DockIcon>
         <DockIcon
           role="button"

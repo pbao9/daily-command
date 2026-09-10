@@ -3,8 +3,26 @@
   "name": "Daily Command",
   "version": "1.0.0",
   "description": "A calm, glassy dashboard that greets you with today's focus every time you open a new tab.",
-  "permissions": ["storage"],
+  "permissions": ["storage", "alarms", "declarativeNetRequest", "notifications"],
+  "host_permissions": ["<all_urls>"],
   "chrome_url_overrides": {
     "newtab": "index.html"
-  }
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icons/icon128.png"
+  },
+  "icons": {
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["blocked.html"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }

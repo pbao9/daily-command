@@ -67,6 +67,29 @@ export interface Meta {
   carryOverHandledDate?: string;
 }
 
+export interface FocusSettings {
+  focusDurationMinutes: number;
+  blockedDomains: string[];
+  restoreOnRestart: boolean;
+}
+
+export interface FocusState {
+  active: boolean;
+  startedAt: number | null;
+  duration: number | null;
+}
+
+export interface FocusStreak {
+  count: number;
+  lastDate: string | null;
+}
+
+export interface FocusStats {
+  totalMinutes: number;
+  todayMinutes: number;
+  todayDate: string | null;
+}
+
 export interface BackupData {
   app: 'daily-command';
   version: 1;

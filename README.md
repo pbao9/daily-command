@@ -18,6 +18,7 @@ A calm, glassmorphism-inspired New Tab dashboard for Chrome — see today's focu
 - **Quick links** — Zalo, Facebook, GitHub, Gmail shortcuts in the top-right rail.
 - **Keyboard shortcut** — press `N` anywhere (outside a text field) to open the Add Task dialog.
 - **Confetti** 🎉 on task completion.
+- **Focus Mode** — a toolbar popup starts a timed (default 45 min) session that blocks distracting sites (facebook.com, tiktok.com, youtube.com, etc., subdomains included) via `declarativeNetRequest`. Visiting a blocked site redirects to an in-extension block page showing time remaining. Session state survives popup close, tab switches, service worker suspend, and Chrome restart (remaining time is always `startedAt + duration - Date.now()`, restored via a `chrome.alarms` check, never a plain countdown). A 🔥 streak counts consecutive days with a completed session. Configure duration and the blocked-sites list from **Settings → Focus Mode**.
 
 ## Tech stack
 
@@ -39,14 +40,21 @@ daily-command/
 ├── src/
 │   ├── components/         # UI components (HeroUI-based)
 │   │   └── magicui/         # Dock, Confetti (ported from magicui.design)
-│   ├── hooks/               # useDailyData, useSettings, useBackground
-│   ├── services/storage.ts # the only module that touches chrome.storage.local
+│   ├── hooks/               # useDailyData, useSettings, useBackground, useFocusMode, useFocusSettings
+│   ├── services/
+│   │   ├── storage.ts       # the only module that touches chrome.storage.local
+│   │   └── focus.ts         # Focus Mode: timer math, domain matching, declarativeNetRequest rules
+│   ├── background/service-worker.ts  # installs defaults, restores session on browser restart, runs the completion alarm
+│   ├── popup/               # toolbar popup (Start/Stop Focus)
+│   ├── blocked/             # block page shown for blocked sites
 │   ├── types/               # shared TypeScript types
 │   ├── utils/               # date + image helpers
 │   ├── App.tsx
 │   └── main.tsx
 ├── legacy/                  # original vanilla HTML/CSS/JS prototype (kept for reference)
-├── index.html               # Vite entry
+├── index.html               # dashboard (New Tab) entry
+├── popup.html               # Focus Mode popup entry
+├── blocked.html             # Focus Mode block page entry
 ├── vite.config.ts
 └── manifest.json is under public/, not the repo root
 ```
@@ -76,4 +84,7 @@ After changing code, re-run `npm run build` and click the reload icon on the ext
 
 ## Permissions
 
-Only `storage` is requested — the minimum needed to persist data locally.
+- `storage` — persist dashboard data and Focus Mode state/settings locally.
+- `alarms` — wake the service worker periodically to detect focus session completion (not a reliable `setInterval`, since MV3 service workers can be suspended).
+- `declarativeNetRequest` + host permissions — block the configured sites during a focus session and redirect to the block page.
+- `notifications` — a single notification when a focus session completes.

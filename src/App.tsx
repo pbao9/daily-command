@@ -7,6 +7,9 @@ import { FocusCard } from "./components/FocusCard";
 import { Header } from "./components/Header";
 import { HistoryModal } from "./components/HistoryModal";
 import { Confetti, type ConfettiRef } from "./components/magicui/confetti";
+import { FocusCountdownBadge } from "./components/FocusCountdownBadge";
+import { FocusModeModal } from "./components/FocusModeModal";
+import { FocusStreakCard } from "./components/FocusStreakCard";
 import { NotesSection } from "./components/NotesSection";
 import { ProgressCard } from "./components/ProgressCard";
 import { QuickActions } from "./components/QuickActions";
@@ -93,6 +96,7 @@ export default function App() {
     const notes = useNotes();
 
     const [settingsOpen, setSettingsOpen] = useState(false);
+    const [focusModeOpen, setFocusModeOpen] = useState(false);
     const [historyOpen, setHistoryOpen] = useState(false);
     const [taskModalOpen, setTaskModalOpen] = useState(false);
     const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -103,6 +107,14 @@ export default function App() {
     const [detailTask, setDetailTask] = useState<Task | null>(null);
     const reminderShownRef = useRef(false);
     const confettiRef = useRef<ConfettiRef>(null);
+
+    // Opened from the Focus Mode popup's "Settings" link (index.html#settings).
+    useEffect(() => {
+        if (window.location.hash === "#settings") {
+            setSettingsOpen(true);
+            history.replaceState(null, "", window.location.pathname);
+        }
+    }, []);
 
     // Once, right after today's data has loaded: if there are unfinished
     // tasks already sitting on today, nudge the user to finish them.
@@ -115,7 +127,9 @@ export default function App() {
     // Keep the open detail modal's task in sync with edits/toggles made elsewhere.
     useEffect(() => {
         if (!detailTask) return;
-        const updated = daily.viewData.tasks.find((t) => t.id === detailTask.id);
+        const updated = daily.viewData.tasks.find(
+            (t) => t.id === detailTask.id,
+        );
         if (updated && updated !== detailTask) setDetailTask(updated);
     }, [daily.viewData, detailTask]);
 
@@ -361,6 +375,11 @@ export default function App() {
                     onViewHistory={() => setHistoryOpen(true)}
                     onOpenSettings={() => setSettingsOpen(true)}
                 />
+                <FocusCountdownBadge
+                    onOpen={() => setFocusModeOpen(true)}
+                    glassBlur={settings.glassBlur}
+                    glassOpacity={settings.glassOpacity}
+                />
                 {settings.showProgress && (
                     <ProgressCard
                         completed={
@@ -385,7 +404,7 @@ export default function App() {
                         />
                     </div>
 
-                    <div className="lg:col-span-2">
+                    <div className="lg:col-span-3">
                         <FocusCard
                             focus={daily.data.focus}
                             pendingCount={
@@ -425,15 +444,20 @@ export default function App() {
                         />
                     </div>
 
-                    <NotesSection
-                        notes={notes.notes}
-                        onAdd={(title, body) => void notes.addNote(title, body)}
-                        onUpdate={(id, patch) =>
-                            void notes.updateNote(id, patch)
-                        }
-                        onTogglePin={(id) => void notes.togglePinNote(id)}
-                        onDelete={(id) => void notes.deleteNote(id)}
-                    />
+                    <div className="flex flex-col gap-4">
+                        <FocusStreakCard />
+                        <NotesSection
+                            notes={notes.notes}
+                            onAdd={(title, body) =>
+                                void notes.addNote(title, body)
+                            }
+                            onUpdate={(id, patch) =>
+                                void notes.updateNote(id, patch)
+                            }
+                            onTogglePin={(id) => void notes.togglePinNote(id)}
+                            onDelete={(id) => void notes.deleteNote(id)}
+                        />
+                    </div>
                 </Card>
 
                 <QuickActions
@@ -441,6 +465,7 @@ export default function App() {
                     onSetFocus={() => setFocusEditSignal((n) => (n ?? 0) + 1)}
                     onViewHistory={() => setHistoryOpen(true)}
                     onOpenSettings={() => setSettingsOpen(true)}
+                    onOpenFocusMode={() => setFocusModeOpen(true)}
                 />
             </main>
 
@@ -474,6 +499,13 @@ export default function App() {
             <HistoryModal
                 open={historyOpen}
                 onClose={() => setHistoryOpen(false)}
+            />
+
+            <FocusModeModal
+                open={focusModeOpen}
+                onClose={() => setFocusModeOpen(false)}
+                glassBlur={settings.glassBlur}
+                glassOpacity={settings.glassOpacity}
             />
 
             <TaskDetailModal

@@ -1,5 +1,6 @@
 import { Button, Input, Label, Modal, Switch, TextField } from '@heroui/react';
 import { useRef, useState } from 'react';
+import { useFocusSettings } from '../hooks/useFocusSettings';
 import type { Settings } from '../types';
 import { BackgroundCard } from './BackgroundCard';
 import { CloseIcon } from './icons';
@@ -27,6 +28,84 @@ function ToggleRow({ label, checked, onChange }: { label: string; checked: boole
         {label}
       </Switch.Content>
     </Switch>
+  );
+}
+
+function FocusModeSection() {
+  const focus = useFocusSettings();
+  const [domainInput, setDomainInput] = useState('');
+  const [error, setError] = useState('');
+
+  async function handleAdd() {
+    if (!domainInput.trim()) return;
+    const ok = await focus.addDomain(domainInput);
+    if (ok) {
+      setDomainInput('');
+      setError('');
+    } else {
+      setError('Invalid domain.');
+    }
+  }
+
+  return (
+    <section className="flex flex-col gap-3">
+      <h3 className="text-xs font-semibold tracking-wide text-white uppercase">Focus Mode</h3>
+
+      <TextField
+        name="focusDuration"
+        value={String(focus.settings.focusDurationMinutes)}
+        onChange={(v) => {
+          const minutes = Math.max(1, Math.min(180, Number(v) || 45));
+          void focus.setDuration(minutes);
+        }}
+      >
+        <Label>Focus duration (minutes)</Label>
+        <Input type="number" min={1} max={180} />
+      </TextField>
+
+      <ToggleRow
+        label="Restore session after browser restart"
+        checked={focus.settings.restoreOnRestart}
+        onChange={(v) => void focus.setRestoreOnRestart(v)}
+      />
+
+      <div className="flex flex-col gap-1.5">
+        <span className="text-sm text-white">Blocked websites</span>
+        <ul className="flex flex-col gap-1.5">
+          {focus.settings.blockedDomains.map((domain) => (
+            <li key={domain} className="flex items-center justify-between rounded-lg bg-white/10 px-3 py-2 text-sm text-white">
+              {domain}
+              <button
+                onClick={() => void focus.removeDomain(domain)}
+                className="text-xs font-semibold text-red-300 hover:text-red-200"
+              >
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="flex gap-2">
+        <input
+          value={domainInput}
+          onChange={(e) => setDomainInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') void handleAdd();
+          }}
+          placeholder="Enter website/domain"
+          className="min-w-0 flex-1 rounded-lg bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/50"
+        />
+        <Button variant="secondary" onPress={() => void handleAdd()}>
+          Add
+        </Button>
+      </div>
+      {error && <p className="text-xs text-red-300">{error}</p>}
+
+      <Button variant="secondary" onPress={() => void focus.resetDomains()}>
+        Reset Default Sites
+      </Button>
+    </section>
   );
 }
 
@@ -103,6 +182,8 @@ export function SettingsModal({
                 onChange={(v) => updateSettings({ showProgress: v })}
               />
             </section>
+
+            <FocusModeSection />
 
             <section className="flex flex-col gap-2">
               <h3 className="text-xs font-semibold tracking-wide text-white uppercase">Backup</h3>

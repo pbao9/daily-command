@@ -11,5 +11,19 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        main: 'index.html',
+        popup: 'popup.html',
+        blocked: 'blocked.html',
+        'background/service-worker': 'src/background/service-worker.ts',
+      },
+      output: {
+        // The manifest references the service worker by exact path, so it
+        // (alone) needs a stable, non-hashed filename.
+        entryFileNames: (chunk) =>
+          chunk.name === 'background/service-worker' ? '[name].js' : 'assets/[name]-[hash].js',
+      },
+    },
   },
 });
